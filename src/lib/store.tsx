@@ -81,7 +81,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const odds = useCallback((selId: string, base: number) => over[selId] ?? base, [over]);
   const isSuspended = useCallback(
-    (selId: string) => suspended.includes(selId) || suspended.includes(selId.split(":").slice(0, 2).join(":")) || suspended.includes(selId.split(":")[0]),
+    (selId: string) => suspended.includes(selId) || suspended.includes(selId.split(":").slice(0, 2).join(":")) || suspended.includes(selId.split(":")[0] ?? ""),
     [suspended],
   );
   const minuteOf = useCallback((matchId: string, base?: number) => {
