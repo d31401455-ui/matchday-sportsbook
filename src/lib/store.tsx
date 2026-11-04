@@ -32,7 +32,7 @@ interface Store {
   setStake: (selId: string, stake: string) => void;
   acceptChanges: () => void;
   removeSuspended: () => void;
-  lines: (SlipLine & { pick: string; market: string; matchLabel: string; matchId: string; score?: string; minute?: number })[];
+  lines: (SlipLine & { pick: string; market: string; matchLabel: string; matchId: string; score?: string | undefined; minute?: number | undefined })[];
   block: ReturnType<typeof slipBlock>;
   place: (force?: "success" | "fail") => void;
   placing: boolean;
@@ -183,7 +183,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setPanelOpen(true); setPanelTab("slip");
       if (seeded) {
         const f = findOutcome(seeded.selId)!;
-        doPlace("success", [{ selId: seeded.selId, addedOdds: seeded.addedOdds, currentOdds: seeded.addedOdds, suspended: false, stake: 10, pick: f.outcome.label, market: f.market.name, matchId: f.match.id, matchLabel: `${f.match.home.name} v ${f.match.away.name}` }]);
+        doPlace("success", [{ selId: seeded.selId, addedOdds: seeded.addedOdds, currentOdds: seeded.addedOdds, suspended: false, stake: 10, pick: f.outcome.label, market: f.market.name, matchId: f.match.id, matchLabel: `${f.match.home.name} v ${f.match.away.name}`, score: undefined, minute: undefined }]);
       } else doPlace("success");
     },
     failed: () => { ensureDemoSlip(); setPanelOpen(true); setPanelTab("slip"); doPlace("fail"); },
