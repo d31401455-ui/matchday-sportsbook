@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/match/$matchId")({
-  validateSearch: (s: Record<string, unknown>) => ({ g: typeof s.g === "string" ? s.g : undefined }),
+  validateSearch: (s: Record<string, unknown>): { g?: string } => (typeof s["g"] === "string" ? { g: s["g"] } : {}),
   loader: ({ params }) => {
     const m = getMatch(params.matchId);
     if (!m) throw notFound();

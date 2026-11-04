@@ -117,7 +117,7 @@ function Home() {
   const soon = matches.filter((m) => m.status === "upcoming" && m.day === "Today");
   const favs = followed.map((k) => {
     const [type, id] = k.split(":");
-    return type === "comp" ? { k, label: getComp(id as never).name } : { k, label: (teams as Record<string, { name: string }>)[id]?.name ?? id };
+    return type === "comp" ? { k, label: getComp(id as never).name } : { k, label: (teams as Record<string, { name: string }>)[id ?? ""]?.name ?? id };
   });
   return (
     <>
