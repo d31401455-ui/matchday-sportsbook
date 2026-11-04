@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const USDT = () => <span className="ml-1 rounded-full bg-success px-1 text-[9px] font-bold text-background">₮</span>;
 
-export function SlipTabs({ onClose }: { onClose?: () => void }) {
+export function SlipTabs({ onClose }: { onClose?: (() => void) | undefined }) {
   const { panelTab, setPanelTab, slip, bets } = useStore();
   const open = bets.filter((b) => b.status === "open").length;
   return (
@@ -162,7 +162,7 @@ export function BetSlip() {
   );
 }
 
-export function MyBets({ full }: { full?: boolean }) {
+export function MyBets({ full }: { full?: boolean | undefined }) {
   const s = useStore();
   const [tab, setTab] = useState<"open" | "settled">("open");
   const [confirm, setConfirm] = useState<string | null>(null);
@@ -218,7 +218,7 @@ function StatusPill({ status }: { status: string }) {
   return <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold capitalize", map[status])}>{status === "cashed" ? "Cashed out" : status}</span>;
 }
 
-export function SlipPanel({ onClose, full }: { onClose?: () => void; full?: boolean }) {
+export function SlipPanel({ onClose, full }: { onClose?: (() => void) | undefined; full?: boolean | undefined }) {
   const { panelTab } = useStore();
   return (
     <div className="flex h-full min-h-0 flex-col">

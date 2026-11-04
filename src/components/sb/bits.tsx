@@ -91,7 +91,7 @@ export function MatchRow({ m }: { m: Match }) {
         ) : (
           <div className={cn("grid gap-2", m.twoWay ? "grid-cols-2" : "grid-cols-3")}>
             {mk.outcomes.map((o, i) => (
-              <OddsButton key={o.id} selId={o.id} base={o.odds} label={m.twoWay ? (i ? m.away.short : m.home.short) : i === 1 ? "Draw" : [m.home, m.away][i ? 1 : 0].name} />
+              <OddsButton key={o.id} selId={o.id} base={o.odds} label={m.twoWay ? (i ? m.away.short : m.home.short) : i === 1 ? "Draw" : (i ? m.away : m.home).name} />
             ))}
           </div>
         )}

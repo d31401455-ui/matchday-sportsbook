@@ -89,7 +89,7 @@ export const getComp = (id: CompetitionId) => competitions.find((c) => c.id === 
 export const sportOf = (m: Match) => getComp(m.competition).sport;
 
 export interface Outcome { id: string; label: string; odds: number }
-export interface Market { id: string; name: string; group: string; outcomes: Outcome[]; cols?: number }
+export interface Market { id: string; name: string; group: string; outcomes: Outcome[]; cols?: number | undefined }
 
 export const marketGroups = ["Popular", "Goals", "Halves", "Handicaps", "Goalscorers", "Corners & cards"] as const;
 
