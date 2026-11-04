@@ -208,7 +208,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     place: (force) => { if (!block || force) doPlace(force ?? "success"); },
     placing, result, dismissResult: () => setResult(null),
     bets,
-    cashOut: (id) => setBets((p) => p.map((b) => (b.id === id ? { ...b, status: "cashed", payout: cashOutOf(b) } : b))).valueOf(),
+    cashOut: (id) => setBets((p) => p.map((b) => (b.id === id ? { ...b, status: "cashed", payout: cashOutOf(b) } : b))),
     cashOutOf, balance,
     followed,
     toggleFollow: (k) => setFollowed((p) => (p.includes(k) ? p.filter((x) => x !== k) : [...p, k])),
