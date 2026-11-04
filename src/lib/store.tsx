@@ -95,7 +95,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const clock = setInterval(() => setElapsed((e) => e + 1), 1000);
     const drift = setInterval(() => {
       const live = matches.filter((m) => m.status === "live");
-      const m = live[Math.floor(Math.random() * live.length)];
+      const m = live[Math.floor(Math.random() * live.length)]; if (!m) return;
       const outs = resultMarket(m).outcomes.filter((x) => !slipRef.current.some((s) => s.selId === x.id));
       const out = outs[Math.floor(Math.random() * outs.length)];
       if (!out) return;
@@ -175,7 +175,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const seeded = ensureDemoSlip();
       const target = seeded ?? slipRef.current[0];
       setResult(null);
-      setSuspended((p) => [...p, target.selId]);
+      setSuspended((p) => [...p, target!.selId]);
       setPanelOpen(true); setPanelTab("slip");
     },
     placed: () => {

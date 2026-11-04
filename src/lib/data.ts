@@ -138,7 +138,7 @@ export function marketsFor(m: Match): Market[] {
 export const initialSuspended = ["new-eve:1x2", "atm-sev:1x2"];
 
 export function findOutcome(selId: string): { match: Match; market: Market; outcome: Outcome } | null {
-  const matchId = selId.split(":")[0];
+  const matchId = selId.split(":")[0] ?? "";
   const match = getMatch(matchId);
   if (!match) return null;
   for (const market of marketsFor(match)) {
