@@ -1,0 +1,2 @@
+- [ ] Search: find specific selections (e.g. 'Saka goal')
+- [ ] Search: odds search (e.g. '1.4' lists all ~1.4x odds)
