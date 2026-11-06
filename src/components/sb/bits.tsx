@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Lock, Star, TrendingDown, TrendingUp } from "lucide-react";
-import { getComp, resultMarket, type Match, type Team } from "@/lib/data";
+import { ChevronDown, ChevronRight, Lock, Star, TrendingDown, TrendingUp } from "lucide-react";
+import { useState } from "react";
+import { getComp, marketsFor, resultMarket, type Match, type Team } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -64,11 +65,14 @@ export function MatchRow({ m }: { m: Match }) {
   const { isSuspended } = useStore();
   const mk = resultMarket(m);
   const sus = isSuspended(mk.id);
+  const [open, setOpen] = useState(false);
+  const quick = open && !m.twoWay ? marketsFor(m).filter((x) => ["dc", "tg25", "btts"].some((k) => x.id.endsWith(`:${k}`))) : [];
   return (
+    <div className="border-t border-border">
     <Link
       to="/match/$matchId"
       params={{ matchId: m.id }}
-      className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 border-t border-border px-3 py-3 hover:bg-muted/40 md:grid-cols-[64px_minmax(0,1fr)_minmax(0,1.4fr)_48px] md:items-center md:px-4"
+      className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-3 py-3 hover:bg-muted/40 md:grid-cols-[64px_minmax(0,1fr)_minmax(0,1.4fr)_48px] md:items-center md:px-4"
     >
       <div className="col-span-2 flex items-center gap-2 text-xs md:col-span-1 md:flex-col md:items-start md:gap-1">
         {m.status === "live" ? <LiveBadge /> : <span className="text-muted-foreground">{m.day}</span>}
@@ -96,10 +100,32 @@ export function MatchRow({ m }: { m: Match }) {
           </div>
         )}
       </div>
-      <span className="row-start-2 flex items-center justify-end self-center text-xs text-muted-foreground md:row-start-auto">
-        +{m.more} <ChevronRight className="h-3.5 w-3.5" />
-      </span>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-label={open ? "Hide quick markets" : "Show quick markets"}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen((v) => !v); }}
+        className={cn("row-start-2 flex items-center justify-end gap-0.5 self-center rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:bg-muted md:row-start-auto", open && "bg-muted text-foreground")}
+      >
+        +{m.more} <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
+      </button>
     </Link>
+    {open && (
+      <div className="space-y-3 bg-muted/30 px-3 pb-3 pt-1 md:px-4 md:pl-[88px]">
+        {quick.map((q) => (
+          <div key={q.id}>
+            <p className="mb-1.5 text-xs text-muted-foreground">{q.name}</p>
+            <div className={cn("grid gap-2", q.outcomes.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+              {q.outcomes.map((o) => <OddsButton key={o.id} selId={o.id} base={o.odds} label={o.label} />)}
+            </div>
+          </div>
+        ))}
+        <Link to="/match/$matchId" params={{ matchId: m.id }} className="flex items-center gap-1 text-sm font-medium text-primary">
+          All {m.more} markets <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+    )}
+    </div>
   );
 }
 
