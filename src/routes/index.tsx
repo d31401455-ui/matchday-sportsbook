@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CompetitionCard, Crest, FollowStar, LiveBadge, OddsButton, Clock } from "@/components/sb/bits";
-import { allPlayers, competitions, footballComps, getComp, matches, resultMarket, searchableMarkets, sports, teams } from "@/lib/data";
+import { allPlayers, competitions, footballComps, getComp, marketsFor, matches, resultMarket, searchableMarkets, sports, teams } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -46,27 +46,56 @@ function SearchBox() {
   const res = useMemo(() => {
     const k = q.trim().toLowerCase();
     if (k.length < 2) return null;
+    // Odds search: "1.4", "x1.4", "@1.40"
+    const num = k.replace(/^[x@]\s*/, "").replace(",", ".");
+    const allSels = matches.flatMap((m) => marketsFor(m).flatMap((mk) => mk.outcomes.map((o) => ({ m, mk, o }))));
+    if (/^\d+(\.\d{1,2})?$/.test(num)) {
+      const v = parseFloat(num);
+      const dec = num.split(".")[1]?.length ?? 0;
+      const lo = v, hi = dec >= 2 ? v : dec === 1 ? v + 0.09 : v + 0.99;
+      const hits = allSels.filter((s) => s.o.odds >= lo - 1e-9 && s.o.odds <= hi + 1e-9).sort((a, b) => a.o.odds - b.o.odds);
+      return { odds: hits, oddsLabel: dec >= 2 ? v.toFixed(2) : `${v.toFixed(dec)}–${hi.toFixed(2)}`, teams: [], players: [], comps: [], markets: [], sels: [] };
+    }
+    const words = k.split(/\s+/).map((w) => (w === "goal" || w === "goals" || w === "scorer" ? "goal" : w));
+    const sels = words.length > 1 ? allSels.filter((s) => {
+      const hay = `${s.m.home.name} ${s.m.away.name} ${s.mk.name} ${s.o.label}`.toLowerCase();
+      return words.every((w) => hay.includes(w));
+    }).slice(0, 8) : [];
     const ts = Object.values(teams).filter((t) => t.name.toLowerCase().includes(k)).slice(0, 4);
     return {
       teams: ts.map((t) => ({ t, m: matches.find((m) => m.home.id === t.id || m.away.id === t.id) })),
       players: allPlayers.filter((p) => p.name.toLowerCase().includes(k)).slice(0, 4),
       comps: competitions.filter((c) => c.name.toLowerCase().includes(k)),
       markets: searchableMarkets.filter((m) => m.toLowerCase().includes(k)).slice(0, 4),
+      sels, odds: [] as typeof sels, oddsLabel: "",
     };
   }, [q]);
-  const empty = res && !res.teams.length && !res.players.length && !res.comps.length && !res.markets.length;
+  const empty = res && !res.teams.length && !res.players.length && !res.comps.length && !res.markets.length && !res.sels.length && !res.odds.length;
+  const selRow = (s: NonNullable<typeof res>["sels"][number]) => (
+    <div key={s.o.id} className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted">
+      <Link to="/match/$matchId" params={{ matchId: s.m.id }} className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{s.o.label}</span>
+        <span className="block truncate text-xs text-muted-foreground">{s.mk.name} · {s.m.home.short} v {s.m.away.short}{s.m.status === "live" ? " · Live" : ""}</span>
+      </Link>
+      <div className="w-20 shrink-0"><OddsButton selId={s.o.id} base={s.o.odds} compact label="" /></div>
+    </div>
+  );
   const H = ({ c }: { c: string }) => <p className="px-3 pb-1 pt-3 text-[11px] uppercase tracking-wider text-muted-foreground">{c}</p>;
   const row = "flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted";
   return (
     <div className="relative mb-4">
       <label className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 focus-within:ring-2 focus-within:ring-ring">
         <Search className="h-4 w-4 text-muted-foreground" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams, players, competitions or markets" aria-label="Search" className="w-full bg-transparent py-3 text-sm outline-none" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search teams, markets (Saka goal) or odds (1.4)" aria-label="Search" className="w-full bg-transparent py-3 text-sm outline-none" />
         {q && <button onClick={() => setQ("")} aria-label="Clear search"><X className="h-4 w-4 text-muted-foreground" /></button>}
       </label>
       {res && (
         <div className="absolute inset-x-0 top-full z-30 mt-1 max-h-96 overflow-y-auto rounded-xl border border-border bg-popover pb-2 shadow-xl">
           {empty && <p className="p-4 text-sm text-muted-foreground">No results for “{q}”.</p>}
+          {res.odds.length > 0 && <H c={`Odds ${res.oddsLabel} · ${res.odds.length} selections`} />}
+          {res.odds.map(selRow)}
+          {res.sels.length > 0 && <H c="Selections" />}
+          {res.sels.map(selRow)}
           {res.teams.length > 0 && <H c="Teams" />}
           {res.teams.map(({ t, m }) => m ? (
             <Link key={t.id} to="/match/$matchId" params={{ matchId: m.id }} className={row}><Crest team={t} />{t.name}<span className="ml-auto text-xs text-muted-foreground">{m.home.short} v {m.away.short}</span></Link>
